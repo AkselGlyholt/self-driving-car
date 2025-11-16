@@ -11,12 +11,13 @@ const N = 2000;
 let cars = generateCars(N);
 let bestCar = cars[0];
 
+const mutatePercentage = 0.1;
 let traffic = generateTraffic(20);
 
 let cycleCount = 1;
 
 document.querySelector(".mutatePercentage").innerHTML = `${
-  (0.1 - cycleCount / 1000) * 100
+  (mutatePercentage - cycleCount / 1000) * 100
 }%`;
 document.querySelector(".cycleCountAmount").innerHTML = `${cycleCount}`;
 
@@ -30,12 +31,12 @@ function newCycle() {
     cars[i].brain = JSON.parse(JSON.stringify(previousBest));
 
     if (i != 0) {
-      NeuralNetwork.mutate(cars[i].brain, 0.1 - cycleCount / 1000);
+      NeuralNetwork.mutate(cars[i].brain, mutatePercentage - cycleCount / 1000);
     }
   }
 
   document.querySelector(".mutatePercentage").innerHTML = `${
-    (0.1 - cycleCount / 1000) * 100
+    (mutatePercentage - cycleCount / 1000) * 100
   }%`;
   document.querySelector(".cycleCountAmount").innerHTML = `${cycleCount}`;
 
@@ -49,12 +50,12 @@ if (localStorage.getItem("bestBrain")) {
     cars[i].brain = JSON.parse(JSON.stringify(saved));
 
     if (i != 0) {
-      NeuralNetwork.mutate(cars[i].brain, 0.1 - cycleCount / 1000);
+      NeuralNetwork.mutate(cars[i].brain, mutatePercentage - cycleCount / 1000);
     }
   }
 
   document.querySelector(".mutatePercentage").innerHTML = `${
-    (0.1 - cycleCount / 1000) * 100
+    (mutatePercentage - cycleCount / 1000) * 100
   }%`;
 }
 
