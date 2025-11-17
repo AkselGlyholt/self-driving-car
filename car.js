@@ -1,5 +1,5 @@
 class Car {
-  constructor(x, y, width, height, controlType, maxSpeed = 3) {
+  constructor(x, y, width, height, controlType, angle = 0, maxSpeed = 3) {
     this.x = x;
     this.y = y;
     this.width = width;
@@ -9,8 +9,10 @@ class Car {
     this.acceleration = 0.2;
     this.maxSpeed = maxSpeed;
     this.friction = 0.05;
-    this.angle = 0;
+    this.angle = angle;
     this.damaged = false;
+
+    this.fittness = 0;
 
     this.useBrain = controlType == "AI";
 
@@ -20,30 +22,14 @@ class Car {
     }
 
     this.controls = new Controls(controlType);
-
-    // fitness tracking
-    this.startTime = performance.now();
-    this.score = 0;
-    this.lastImprovement = performance.now();
-    this.lastBestDistance = 0;
   }
 
   update(roadBorders, traffic) {
     if (!this.damaged) {
       this.#move();
+      this.fittness += this.speed;
       this.polygon = this.#createPolygon();
       this.damaged = this.#assesDamage(roadBorders, traffic);
-
-      // distance travelled (negative y because cars go up)
-      const distance = -this.y;
-
-      // fitness scoring: go far fast
-      const elapsed = (performance.now() - this.startTime) / 1000;
-      this.score = distance - elapsed * 2; // tune weight: 2 is moderate
-
-      // stale detection
-      this.lastImprovement = performance.now();
-      this.lastBestDistance = distance;
     }
 
     if (this.sensor) {

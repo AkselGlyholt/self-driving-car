@@ -31,13 +31,11 @@ function polysIntersect(poly1, poly2) {
         poly2[j],
         poly2[(j + 1) % poly2.length]
       );
-
       if (touch) {
         return true;
       }
     }
   }
-
   return false;
 }
 
@@ -47,4 +45,9 @@ function getRGBA(value) {
   const G = R;
   const B = value > 0 ? 0 : 255;
   return "rgba(" + R + "," + G + "," + B + "," + alpha + ")";
+}
+
+function getRandomColor() {
+  const hue = 290 + Math.random() * 260;
+  return "hsl(" + hue + ", 100%, 60%)";
 }
