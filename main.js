@@ -17,17 +17,17 @@ const world = worldInfo ? World.load(worldInfo) : new World(new Graph());
 
 const viewport = new Viewport(carCanvas, world.zoom, world.offset);
 
-const N = 20;
+const N = 30;
 let cars = generateCars(N);
 let bestCar = cars[0];
 
-if (localStorage.getItem("bestBrain")) {
-  for (let i = 0; i < cars.length; i++) {
-    cars[i].brain = JSON.parse(localStorage.getItem("bestBrain"));
-
-    if (i != 0) {
-      NeuralNetwork.mutate(cars[i].brain, 0.1);
-    }
+const storedBrain = localStorage.getItem("bestBrain");
+if (storedBrain) {
+  const baseBrain = JSON.parse(storedBrain);
+  cars[0].brain = baseBrain;
+  for (let i = 1; i < cars.length; i++) {
+    cars[i].brain = JSON.parse(storedBrain);
+    NeuralNetwork.mutate(cars[i].brain, 0.1);
   }
 }
 
@@ -54,16 +54,11 @@ function generateCars(N) {
   const startAngle = -angle(dir) + Math.PI / 2;
 
   const cars = [];
-  for (let i = 1; i <= N; i++) {
+  for (let i = 0; i < N; i++) {
     cars.push(new Car(startPoint.x, startPoint.y, 30, 50, "AI", startAngle));
   }
 
   return cars;
-}
-
-function getBestCar() {
-  bestCar = cars.reduce((b, c) => (c.fittness > b.fittness ? c : b));
-  return bestCar;
 }
 
 function animate(time) {
@@ -71,11 +66,15 @@ function animate(time) {
     traffic[i].update(roadBorders, []);
   }
 
+  let currentBest = bestCar;
   for (let i = 0; i < cars.length; i++) {
     cars[i].update(roadBorders, traffic);
+    if (!currentBest || cars[i].fittness > currentBest.fittness) {
+      currentBest = cars[i];
+    }
   }
 
-  getBestCar();
+  bestCar = currentBest;
 
   world.cars = cars;
   world.bestCar = bestCar;

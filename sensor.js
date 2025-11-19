@@ -19,44 +19,35 @@ class Sensor {
   }
 
   #getReading(ray, roadBorders, traffic) {
-    let touches = [];
+    let closestTouch = null;
+    const [start, end] = ray;
+
+    const registerTouch = (touch) => {
+      if (touch && (!closestTouch || touch.offset < closestTouch.offset)) {
+        closestTouch = touch;
+      }
+    };
 
     for (let i = 0; i < roadBorders.length; i++) {
-      const touch = getIntersection(
-        ray[0],
-        ray[1],
-        roadBorders[i][0],
-        roadBorders[i][1]
+      registerTouch(
+        getIntersection(start, end, roadBorders[i][0], roadBorders[i][1])
       );
-      if (touch) {
-        touches.push(touch);
-      }
     }
 
     for (let i = 0; i < traffic.length; i++) {
       const poly = traffic[i].polygon;
+      if (!poly) {
+        continue;
+      }
 
       for (let j = 0; j < poly.length; j++) {
-        const value = getIntersection(
-          ray[0],
-          ray[1],
-          poly[j],
-          poly[(j + 1) % poly.length]
+        registerTouch(
+          getIntersection(start, end, poly[j], poly[(j + 1) % poly.length])
         );
-
-        if (value) {
-          touches.push(value);
-        }
       }
     }
 
-    if (touches.length == 0) {
-      return null;
-    } else {
-      const offsets = touches.map((e) => e.offset);
-      const minOffset = Math.min(...offsets);
-      return touches.find((e) => e.offset == minOffset);
-    }
+    return closestTouch;
   }
 
   #castRays() {

@@ -28,6 +28,8 @@ class World {
     this.bestCar = null;
 
     this.frameCount = 0;
+    this._intersectionCache = null;
+    this._lightVersion = 0;
 
     this.generate();
   }
@@ -49,10 +51,14 @@ class World {
     world.markings = info.markings.map((m) => Marking.load(m));
     world.zoom = info.zoom;
     world.offset = info.offset;
+    world._intersectionCache = null;
+    world._lightVersion++;
     return world;
   }
 
   generate() {
+    this._intersectionCache = null;
+    this._lightVersion++;
     this.envelopes.length = 0;
     for (const seg of this.graph.segments) {
       this.envelopes.push(
@@ -210,6 +216,9 @@ class World {
   }
 
   #getIntersections() {
+    if (this._intersectionCache) {
+      return this._intersectionCache;
+    }
     const subset = [];
     for (const point of this.graph.points) {
       let degree = 0;
@@ -223,44 +232,52 @@ class World {
         subset.push(point);
       }
     }
+    this._intersectionCache = subset;
     return subset;
   }
 
   #updateLights() {
     const lights = this.markings.filter((m) => m instanceof Light);
-    const controlCenters = [];
+    if (lights.length === 0) {
+      this.frameCount++;
+      return;
+    }
+
+    const intersections = this.#getIntersections();
+    const controllers = new Map();
     for (const light of lights) {
-      const point = getNearestPoint(light.center, this.#getIntersections());
-      let controlCenter = controlCenters.find((c) => c.equals(point));
-      if (!controlCenter) {
-        controlCenter = new Point(point.x, point.y);
-        controlCenter.lights = [light];
-        controlCenters.push(controlCenter);
-      } else {
-        controlCenter.lights.push(light);
+      const moved =
+        light._cachedCenterX !== light.center.x ||
+        light._cachedCenterY !== light.center.y;
+      if (light._lightVersion !== this._lightVersion || moved) {
+        const point = getNearestPoint(light.center, intersections);
+        light._controlCenter = point || light.center;
+        light._lightVersion = this._lightVersion;
+        light._cachedCenterX = light.center.x;
+        light._cachedCenterY = light.center.y;
       }
+      const center = light._controlCenter;
+      if (!controllers.has(center)) {
+        controllers.set(center, []);
+      }
+      controllers.get(center).push(light);
     }
-    const greenDuration = 2,
-      yellowDuration = 1;
-    for (const center of controlCenters) {
-      center.ticks = center.lights.length * (greenDuration + yellowDuration);
-    }
+
+    const greenDuration = 2;
+    const yellowDuration = 1;
+    const cycleDuration = greenDuration + yellowDuration;
     const tick = Math.floor(this.frameCount / 60);
-    for (const center of controlCenters) {
-      const cTick = tick % center.ticks;
-      const greenYellowIndex = Math.floor(
-        cTick / (greenDuration + yellowDuration)
-      );
+    for (const group of controllers.values()) {
+      if (group.length === 0) {
+        continue;
+      }
+      const totalTicks = group.length * cycleDuration;
+      const cTick = tick % totalTicks;
+      const activeIndex = Math.floor(cTick / cycleDuration);
       const greenYellowState =
-        cTick % (greenDuration + yellowDuration) < greenDuration
-          ? "green"
-          : "yellow";
-      for (let i = 0; i < center.lights.length; i++) {
-        if (i == greenYellowIndex) {
-          center.lights[i].state = greenYellowState;
-        } else {
-          center.lights[i].state = "red";
-        }
+        cTick % cycleDuration < greenDuration ? "green" : "yellow";
+      for (let i = 0; i < group.length; i++) {
+        group[i].state = i === activeIndex ? greenYellowState : "red";
       }
     }
     this.frameCount++;
