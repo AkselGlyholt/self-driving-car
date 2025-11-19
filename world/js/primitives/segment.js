@@ -49,7 +49,7 @@ class Segment {
     ctx.strokeStyle = color;
     ctx.lineCap = cap;
     if (this.oneWay) {
-      dash = [4, 4];
+      dash = [20, 4];
     }
     ctx.setLineDash(dash);
     ctx.moveTo(this.p1.x, this.p1.y);

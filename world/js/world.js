@@ -31,6 +31,8 @@ class World {
     this._intersectionCache = null;
     this._lightVersion = 0;
 
+    this.chunks = loadedChunks;
+
     this.generate();
   }
 
@@ -72,6 +74,22 @@ class World {
 
     this.laneGuides.length = 0;
     this.laneGuides.push(...this.#generateLaneGuides());
+  }
+
+  async addChunk(chunk) {
+    // Add raw graph data (if you want to use graph logic later)
+    this.graph.points.push(...chunk.points);
+    this.graph.segments.push(...chunk.segments);
+
+    // Build envelopes for chunk segments
+    chunk.envs = [];
+    for (const seg of chunk.segments) {
+      const env = new Envelope(seg, this.roadWidth, this.roadRoundness);
+      this.envelopes.push(env);
+    }
+
+    // Recompute borders
+    //this.roadBorders = Polygon.union(this.envelopes.map((e) => e.poly));
   }
 
   #generateLaneGuides() {

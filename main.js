@@ -14,10 +14,12 @@ const worldString = localStorage.getItem("world");
 const worldInfo = worldString ? JSON.parse(worldString) : null;
 const world = worldInfo ? World.load(worldInfo) : new World(new Graph());
 */
+const world = new World(new Graph());
+world.chunks = loadedChunks;
 
 const viewport = new Viewport(carCanvas, world.zoom, world.offset);
 
-const N = 30;
+const N = 1;
 let cars = generateCars(N);
 let bestCar = cars[0];
 
@@ -55,7 +57,7 @@ function generateCars(N) {
 
   const cars = [];
   for (let i = 0; i < N; i++) {
-    cars.push(new Car(startPoint.x, startPoint.y, 30, 50, "AI", startAngle));
+    cars.push(new Car(0, 0, 30, 50, "KEYS", startAngle));
   }
 
   return cars;
@@ -75,6 +77,8 @@ function animate(time) {
   }
 
   bestCar = currentBest;
+
+  updateChunkLoading(bestCar.x, bestCar.y);
 
   world.cars = cars;
   world.bestCar = bestCar;

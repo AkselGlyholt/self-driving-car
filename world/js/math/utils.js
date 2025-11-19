@@ -119,3 +119,23 @@ function getFake3dPoint(point, viewPoint, height) {
   const scaler = Math.atan(dist / 300) / (Math.PI / 2);
   return add(point, scale(dir, height * scaler));
 }
+
+function latLonToXY(lat, lon, originLat, originLon) {
+  const metersPerDegLat = 111000 * 10;
+  const metersPerDegLon = 111000 * Math.cos((originLat * Math.PI) / 180) * 10;
+
+  const x = (lon - originLon) * metersPerDegLon;
+  const y = (lat - originLat) * metersPerDegLat;
+
+  return { x, y };
+}
+
+function xyToLatLon(x, y, originLat, originLon) {
+  const metersPerDegLat = 111000 * 10;
+  const metersPerDegLon = 111000 * Math.cos((originLat * Math.PI) / 180) * 10;
+
+  const lat = originLat + y / metersPerDegLat;
+  const lon = originLon + x / metersPerDegLon;
+
+  return { lat, lon };
+}
