@@ -266,7 +266,7 @@ class World {
     this.frameCount++;
   }
 
-  draw(ctx, viewPoint, showStartMarkings = true) {
+  draw(ctx, viewPoint, showStartMarkings = true, renderRadius = 1000) {
     this.#updateLights();
 
     for (const env of this.envelopes) {
@@ -286,15 +286,17 @@ class World {
 
     ctx.globalAlpha = 0.2;
     for (const car of this.cars) {
-      car.draw(ctx, "blue");
+      car.draw(ctx);
     }
-
     ctx.globalAlpha = 1;
     if (this.bestCar) {
-      this.bestCar.draw(ctx, "blue", true);
+      this.bestCar.draw(ctx, true);
     }
 
-    const items = [...this.buildings, ...this.trees];
+    const items = [...this.buildings, ...this.trees].filter(
+      (i) =>
+        i.base.distanceToPoint(viewPoint) < renderRadius * viewport.zoom * 0.6
+    );
     items.sort(
       (a, b) =>
         b.base.distanceToPoint(viewPoint) - a.base.distanceToPoint(viewPoint)

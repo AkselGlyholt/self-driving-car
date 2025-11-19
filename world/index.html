@@ -14,8 +14,9 @@
     <button onclick="save()">💾</button>
     <label for="fileInput" class="file-input-label">
       📁
-      <input type="file" id="fileInput" accpet=".world" onchange="load(event)">
+      <input type="file" id="fileInput" accept=".world" onchange="load(event)" />
     </label>
+    <button onclick="openOsmPanel()">🗺️</button>
     &nbsp;
     <button id="graphBtn" onclick="setMode('graph')">🌐</button>
     <button id="stopBtn" onclick="setMode('stop')">🛑</button>
@@ -25,6 +26,14 @@
     <button id="lightBtn" onclick="setMode('light')">🚦</button>
     <button id="startBtn" onclick="setMode('start')">🚙</button>
     <button id="targetBtn" onclick="setMode('target')">🎯</button>
+
+    <div id="osmPanel" style="display:none;">
+      <textarea id="osmDataContainer" rows="10" cols="50" placeholder="Paste OSM data here"></textarea>
+      <div>
+        <button onclick="parseOsmData()">✔️</button>
+        <button onclick="closeOsmPanel()">❌</button>
+      </div>
+    </div>
   </div>
 
   <script src="js/world.js"></script>
@@ -50,6 +59,7 @@
   <script src="js/items/building.js"></script>
   <script src="js/math/utils.js"></script>
   <script src="js/math/graph.js"></script>
+  <script src="js/math/osm.js"></script>
   <script src="js/primitives/point.js"></script>
   <script src="js/primitives/segment.js"></script>
   <script src="js/primitives/polygon.js"></script>
@@ -62,8 +72,9 @@
 
     const worldString = localStorage.getItem("world");
     const worldInfo = worldString ? JSON.parse(worldString) : null;
-    let world = worldInfo ?
-      World.load(worldInfo) : new World(new Graph())
+    let world = worldInfo
+      ? World.load(worldInfo)
+      : new World(new Graph());
     const graph = world.graph;
 
     const viewport = new Viewport(myCanvas, world.zoom, world.offset);
@@ -128,15 +139,15 @@
       const file = event.target.files[0];
 
       if (!file) {
-        alert("No file selected!");
+        alert("No file selected.");
         return;
       }
 
       const reader = new FileReader();
       reader.readAsText(file);
 
-      reader.onload = (event) => {
-        const fileContent = event.target.result;
+      reader.onload = (evt) => {
+        const fileContent = evt.target.result;
         const jsonData = JSON.parse(fileContent);
         world = World.load(jsonData);
         localStorage.setItem("world", JSON.stringify(world));
@@ -157,6 +168,25 @@
         tool.button.style.filter = "grayscale(100%)";
         tool.editor.disable();
       }
+    }
+
+    function openOsmPanel() {
+      osmPanel.style.display = "block";
+    }
+
+    function closeOsmPanel() {
+      osmPanel.style.display = "none";
+    }
+
+    function parseOsmData() {
+      if (osmDataContainer.value == "") {
+        alert("Paste data first");
+        return;
+      }
+      const res = Osm.parseRoads(JSON.parse(osmDataContainer.value));
+      graph.points = res.points;
+      graph.segments = res.segments;
+      closeOsmPanel();
     }
   </script>
 </body>

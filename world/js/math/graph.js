@@ -13,7 +13,6 @@ class Graph {
           points.find((p) => p.equals(i.p2))
         )
     );
-
     return new Graph(points, segments);
   }
 
@@ -32,10 +31,8 @@ class Graph {
   tryAddPoint(point) {
     if (!this.containsPoint(point)) {
       this.addPoint(point);
-
       return true;
     }
-
     return false;
   }
 
@@ -58,10 +55,8 @@ class Graph {
   tryAddSegment(seg) {
     if (!this.containsSegment(seg) && !seg.p1.equals(seg.p2)) {
       this.addSegment(seg);
-
       return true;
     }
-
     return false;
   }
 
@@ -71,13 +66,11 @@ class Graph {
 
   getSegmentsWithPoint(point) {
     const segs = [];
-
     for (const seg of this.segments) {
       if (seg.includes(point)) {
         segs.push(seg);
       }
     }
-
     return segs;
   }
 

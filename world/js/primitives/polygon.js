@@ -82,7 +82,6 @@ class Polygon {
         }
       }
     }
-
     return false;
   }
 

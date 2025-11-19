@@ -10,7 +10,6 @@ class Envelope {
     const env = new Envelope();
     env.skeleton = new Segment(info.skeleton.p1, info.skeleton.p2);
     env.poly = Polygon.load(info.poly);
-
     return env;
   }
 
@@ -21,13 +20,13 @@ class Envelope {
     const alpha = angle(subtract(p1, p2));
     const alpha_cw = alpha + Math.PI / 2;
     const alpha_ccw = alpha - Math.PI / 2;
+
     const points = [];
     const step = Math.PI / Math.max(1, roundness);
     const eps = step / 2;
     for (let i = alpha_ccw; i <= alpha_cw + eps; i += step) {
       points.push(translate(p1, i, radius));
     }
-
     for (let i = alpha_ccw; i <= alpha_cw + eps; i += step) {
       points.push(translate(p2, Math.PI + i, radius));
     }
