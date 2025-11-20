@@ -6,7 +6,7 @@ class Car {
     height,
     controlType,
     angle = 0,
-    maxSpeed = 3,
+    maxSpeed = 8,
     color = "blue"
   ) {
     this.x = x;

@@ -2,7 +2,7 @@
 // Chunk loading config
 //
 const CHUNK_SIZE = 2000; // meters
-const FETCH_DISTANCE = 700; // meters before triggering reload
+const FETCH_DISTANCE = 200; // meters before triggering reload
 const INSET = 1; // avoid bbox overlap
 const MAX_PARALLEL = 3;
 
@@ -47,6 +47,8 @@ function buildBBox(cx, cy) {
 }
 
 function buildQuery({ south, west, north, east }) {
+  const bbox = `${south}, ${west}, ${north}, ${east}`;
+
   return `
     [out:json][timeout:25];
     (
@@ -54,7 +56,14 @@ function buildQuery({ south, west, north, east }) {
       ["highway" !~ "track"]
       ["highway" !~ "cycleway"]
       ["highway" !~ "footway"]
-      (${south}, ${west}, ${north}, ${east});
+      ["highway" !~ "path"]
+      ["highway" !~ "steps"]
+      ["highway" !~ "pedestrian"]
+      (${bbox});
+
+      nwr["building"](${bbox});
+
+      nwr["amenity"="parking"](${bbox});
     );
     out body;
     >;
@@ -95,7 +104,6 @@ async function loadChunk(cx, cy) {
 
     loadedChunks.set(key, parsed);
     world.addChunk(parsed);
-    console.log(`Finished ${cx}, ${cy}`);
   } finally {
     loadingChunks.delete(key);
   }

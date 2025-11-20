@@ -108,6 +108,36 @@ class Polygon {
     }
   }
 
+  getLongestEdge() {
+    let best = null;
+    let bestDist = -Infinity;
+
+    for (let i = 0; i < this.points.length; i++) {
+      const a = this.points[i];
+      const b = this.points[(i + 1) % this.points.length];
+      const d = distance(a, b);
+
+      if (d > bestDist) {
+        bestDist = d;
+        best = { a, b, index: i };
+      }
+    }
+
+    return best;
+  }
+
+  getCentroid() {
+    let x = 0,
+      y = 0;
+
+    for (const p of this.points) {
+      x += p.x;
+      y += p.y;
+    }
+
+    return new Point(x / this.points.length, y / this.points.length);
+  }
+
   draw(
     ctx,
     {

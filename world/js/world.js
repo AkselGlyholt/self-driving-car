@@ -19,6 +19,7 @@ class World {
     this.envelopes = [];
     this.roadBorders = [];
     this.buildings = [];
+    this.parking = [];
     this.trees = [];
     this.laneGuides = [];
 
@@ -86,6 +87,18 @@ class World {
     for (const seg of chunk.segments) {
       const env = new Envelope(seg, this.roadWidth, this.roadRoundness);
       this.envelopes.push(env);
+    }
+
+    if (chunk.buildings) {
+      for (const house of chunk.buildings) {
+        this.buildings.push(new Building(house.poly, house.house.type));
+      }
+    }
+
+    if (chunk.parking.length > 0) {
+      for (const park of chunk.parking) {
+        this.parking.push(park.poly);
+      }
     }
 
     // Recompute borders
@@ -307,6 +320,11 @@ class World {
     for (const env of this.envelopes) {
       env.draw(ctx, { fill: "#BBB", stroke: "#BBB", lineWidth: 15 });
     }
+
+    for (const park of this.parking) {
+      park.draw(ctx, { fill: "#BBB" });
+    }
+
     for (const marking of this.markings) {
       if (!(marking instanceof Start) || showStartMarkings) {
         marking.draw(ctx);

@@ -1,11 +1,16 @@
 class Building {
-  constructor(poly, height = 200) {
+  constructor(poly, type = "yes", height = 200) {
     this.base = poly;
     this.height = height;
+    this.type = type;
+
+    if (type === "apartments") {
+      this.height = 400;
+    }
   }
 
   static load(info) {
-    return new Building(Polygon.load(info.base), info.height);
+    return new Building(Polygon.load(info.base), info.type, info.height);
   }
 
   draw(ctx, viewPoint) {
@@ -62,11 +67,25 @@ class Building {
       fill: "white",
       stroke: "rgba(0,0,0,0.2",
       lineWidth: 20,
+      join: "round",
     });
+
     for (const side of sides) {
-      side.draw(ctx, { fill: "white", stroke: "#AAA" });
+      side.draw(ctx, {
+        fill: "white",
+        stroke: "#AAA",
+        join: "round",
+      });
     }
-    ceiling.draw(ctx, { fill: "white", stroke: "white", lineWidth: 6 });
+    /*
+    ceiling.draw(ctx, {
+      fill: "white",
+      stroke: "white",
+      lineWidth: 0,
+      join: "round",
+    });
+    */
+    /*
     for (const poly of roofPolys) {
       poly.draw(ctx, {
         fill: "#D44",
@@ -75,5 +94,6 @@ class Building {
         join: "round",
       });
     }
+    */
   }
 }

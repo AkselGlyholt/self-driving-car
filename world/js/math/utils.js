@@ -139,3 +139,7 @@ function xyToLatLon(x, y, originLat, originLon) {
 
   return { lat, lon };
 }
+
+function midpoint(a, b) {
+  return new Point((a.x + b.x) / 2, (a.y + b.y) / 2);
+}
