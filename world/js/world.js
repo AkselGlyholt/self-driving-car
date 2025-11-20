@@ -321,10 +321,6 @@ class World {
       env.draw(ctx, { fill: "#BBB", stroke: "#BBB", lineWidth: 15 });
     }
 
-    for (const park of this.parking) {
-      park.draw(ctx, { fill: "#BBB" });
-    }
-
     for (const marking of this.markings) {
       if (!(marking instanceof Start) || showStartMarkings) {
         marking.draw(ctx);
@@ -335,6 +331,10 @@ class World {
     }
     for (const seg of this.roadBorders) {
       seg.draw(ctx, { color: "white", width: 4 });
+    }
+
+    for (const park of this.parking) {
+      park.draw(ctx, { fill: "#BBB", stroke: "rgba(0,0,0,0)" });
     }
 
     ctx.globalAlpha = 0.2;

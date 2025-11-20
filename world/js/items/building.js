@@ -77,14 +77,12 @@ class Building {
         join: "round",
       });
     }
-    /*
     ceiling.draw(ctx, {
-      fill: "white",
-      stroke: "white",
-      lineWidth: 0,
+      fill: "#D44",
+      stroke: "#C44",
+      lineWidth: 8,
       join: "round",
     });
-    */
     /*
     for (const poly of roofPolys) {
       poly.draw(ctx, {
