@@ -345,7 +345,7 @@ class World {
 
     if (this.corridor) {
       for (const seg of this.corridor) {
-        seg.draw(ctx, { color: "red", width: 4 });
+        seg.draw(ctx, { color: "rgba(0,0,0,0.2)", width: 4 });
       }
     }
 

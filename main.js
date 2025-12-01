@@ -1,7 +1,7 @@
 const carCanvas = document.getElementById("carCanvas");
-carCanvas.width = window.innerWidth - 330;
+carCanvas.width = window.innerWidth - 500;
 const networkCanvas = document.getElementById("networkCanvas");
-networkCanvas.width = 300;
+networkCanvas.width = 500;
 
 carCanvas.height = window.innerHeight;
 networkCanvas.height = window.innerHeight;
@@ -17,7 +17,7 @@ const world = worldInfo ? World.load(worldInfo) : new World(new Graph());
 
 const viewport = new Viewport(carCanvas, world.zoom, world.offset);
 
-const N = 30;
+const N = 1;
 let cars = generateCars(N);
 let bestCar = cars[0];
 
@@ -27,7 +27,7 @@ if (storedBrain) {
   cars[0].brain = baseBrain;
   for (let i = 1; i < cars.length; i++) {
     cars[i].brain = JSON.parse(storedBrain);
-    NeuralNetwork.mutate(cars[i].brain, 0.1);
+    NeuralNetwork.mutate(cars[i].brain, 0.5);
   }
 }
 
@@ -40,6 +40,9 @@ if (target) {
 } else {
   roadBorders = world.roadBorders.map((s) => [s.p1, s.p2]);
 }
+const stopBorders = world.markings
+  .filter((m) => m instanceof Stop)
+  .map((s) => [s.border.p1, s.border.p2]);
 
 animate();
 
@@ -75,9 +78,13 @@ function animate(time) {
     traffic[i].update(roadBorders, []);
   }
 
+  const lightBorders = world.markings
+    .filter((m) => m instanceof Light && m.state != "green")
+    .map((s) => [s.border.p1, s.border.p2]);
+
   let currentBest = bestCar;
   for (let i = 0; i < cars.length; i++) {
-    cars[i].update(roadBorders, traffic);
+    cars[i].update(roadBorders, traffic, stopBorders, lightBorders);
     if (!currentBest || cars[i].fittness > currentBest.fittness) {
       currentBest = cars[i];
     }

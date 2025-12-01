@@ -6,7 +6,7 @@ class Car {
     height,
     controlType,
     angle = 0,
-    maxSpeed = 3,
+    maxSpeed = 8,
     color = "blue"
   ) {
     this.x = x;
@@ -15,9 +15,9 @@ class Car {
     this.height = height;
 
     this.speed = 0;
-    this.acceleration = 0.2;
+    this.acceleration = 0.08;
     this.maxSpeed = maxSpeed;
-    this.friction = 0.05;
+    this.friction = 0.04;
     this.angle = angle;
     this.damaged = false;
 
@@ -26,8 +26,22 @@ class Car {
     this.useBrain = controlType == "AI";
 
     if (controlType != "DUMMY") {
-      this.sensor = new Sensor(this);
-      this.brain = new NeuralNetwork([this.sensor.rayCount, 6, 4]);
+      this.sensor = new Sensor(this, {
+        rayCount: 2,
+        rayOffset: -0.4,
+        raySpread: 0.8,
+        rayLength: 350,
+      });
+      this.stopSensor = new Sensor(this, { rayCount: 1, rayLength: 350 });
+      this.lightSensor = new Sensor(this, { rayCount: 1, rayLength: 350 });
+      this.brain = new NeuralNetwork([
+        this.sensor.rayCount +
+          this.stopSensor.rayCount +
+          this.lightSensor.rayCount,
+        10,
+        10,
+        4,
+      ]);
     }
     this.controls = new Controls(controlType);
 
@@ -58,12 +72,21 @@ class Car {
     this.sensor.raySpread = info.sensor.raySpread;
     this.sensor.rayLength = info.sensor.rayLength;
     this.sensor.rayOffset = info.sensor.rayOffset;
+    this.stopSensor.rayCount = info.stopSensor.rayCount;
+    this.stopSensor.raySpread = info.stopSensor.raySpread;
+    this.stopSensor.rayLength = info.stopSensor.rayLength;
+    this.stopSensor.rayOffset = info.stopSensor.rayOffset;
+    this.lightSensor.rayCount = info.lightSensor.rayCount;
+    this.lightSensor.raySpread = info.lightSensor.raySpread;
+    this.lightSensor.rayLength = info.lightSensor.rayLength;
+    this.lightSensor.rayOffset = info.lightSensor.rayOffset;
   }
 
-  update(roadBorders, traffic) {
+  update(roadBorders, traffic, stopBorders, lightBorders) {
     if (!this.damaged) {
       this.#move();
       this.fittness += this.speed;
+
       this.polygon = this.#createPolygon();
       this.damaged = this.#assessDamage(roadBorders, traffic);
     }
@@ -72,6 +95,19 @@ class Car {
       const offsets = this.sensor.readings
         .map((s) => (s == null ? 0 : 1 - s.offset))
         .concat([this.speed / this.maxSpeed]);
+
+      this.stopSensor.update(stopBorders);
+      const stopOffsets = this.stopSensor.readings.map((s) =>
+        s == null ? 0 : 1 - s.offset
+      );
+      offsets.push(Math.max(...stopOffsets));
+
+      this.lightSensor.update(lightBorders);
+      const lightOffsets = this.lightSensor.readings.map((s) =>
+        s == null ? 0 : 1 - s.offset
+      );
+      offsets.push(Math.max(...lightOffsets));
+
       const outputs = NeuralNetwork.feedForward(offsets, this.brain);
 
       if (this.useBrain) {
@@ -160,8 +196,10 @@ class Car {
   }
 
   draw(ctx, drawSensor = false) {
-    if (this.sensor && drawSensor) {
+    if (drawSensor) {
       this.sensor.draw(ctx);
+      this.stopSensor.draw(ctx, { color: "red" });
+      this.lightSensor.draw(ctx, { color: "green" });
     }
 
     ctx.save();
