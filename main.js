@@ -32,7 +32,14 @@ if (storedBrain) {
 }
 
 const traffic = [];
-const roadBorders = world.roadBorders.map((s) => [s.p1, s.p2]);
+let roadBorders = [];
+const target = world.markings.find((m) => m instanceof Target);
+if (target) {
+  world.generateCorridor(bestCar, target.center);
+  roadBorders = world.corridor.map((s) => [s.p1, s.p2]);
+} else {
+  roadBorders = world.roadBorders.map((s) => [s.p1, s.p2]);
+}
 
 animate();
 
@@ -55,7 +62,9 @@ function generateCars(N) {
 
   const cars = [];
   for (let i = 0; i < N; i++) {
-    cars.push(new Car(startPoint.x, startPoint.y, 30, 50, "AI", startAngle));
+    const car = new Car(startPoint.x, startPoint.y, 30, 50, "AI", startAngle);
+    car.load(carInfo);
+    cars.push(car);
   }
 
   return cars;
